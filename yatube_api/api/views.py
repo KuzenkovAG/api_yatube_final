@@ -2,10 +2,11 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, generics, permissions, viewsets
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from . import serializers
 from .permissions import IsAuthorOrReadOnly
-from posts.models import Post, Group, Follow
+from posts.models import Post, Group
 
 User = get_user_model()
 
@@ -13,7 +14,7 @@ User = get_user_model()
 class PostViewSet(viewsets.ModelViewSet):
     """ViewSet for Post."""
     serializer_class = serializers.PostSerializer
-    permission_classes = (IsAuthorOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly,)
     queryset = Post.objects.all()
     pagination_class = LimitOffsetPagination
 
@@ -24,14 +25,14 @@ class PostViewSet(viewsets.ModelViewSet):
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for Group."""
     serializer_class = serializers.GroupSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.AllowAny,)
     queryset = Group.objects.all()
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     """ViewSet for Comment."""
     serializer_class = serializers.CommentSerializer
-    permission_classes = (IsAuthorOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly,)
 
     def get_queryset(self):
         post = get_object_or_404(Post, id=self.kwargs.get('post_id'))
@@ -52,12 +53,9 @@ class FollowView(generics.ListCreateAPIView):
     search_fields = ('following__username',)
 
     def get_queryset(self):
-        return Follow.objects.filter(user=self.request.user)
+        user = get_object_or_404(User, id=self.request.user.id)
+        return user.publisher.all()
 
     def perform_create(self, serializer):
         user = self.request.user
-        following = get_object_or_404(
-            User,
-            username=self.request.data.get('following')
-        )
-        serializer.save(user=user, following=following)
+        serializer.save(user=user)
