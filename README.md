@@ -1,6 +1,6 @@
 # Yatube API
-
-Provide API services for:
+Social network with API services. 
+It allow:
 - Create User
 - Create Posts
 - View Posts of other Users
@@ -30,7 +30,9 @@ python manage.py runserver
 
 ## Usage
 Receive all ENDPOINST
+```sh
 /redoc/
+```
 
 ## Example of requests
 Create User
