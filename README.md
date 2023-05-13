@@ -25,6 +25,9 @@ git clone git@github.com:KuzenkovAG/api_yatube_final.git
 ```
 Install environment
 ```sh
+cd api_yatube_final/
+```
+```sh
 python -m venv venv
 ```
 Activate environment
